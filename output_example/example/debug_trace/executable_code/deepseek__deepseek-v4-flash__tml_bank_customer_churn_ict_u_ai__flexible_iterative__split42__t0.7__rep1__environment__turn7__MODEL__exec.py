@@ -1,0 +1,56 @@
+import pandas as pd
+import numpy as np
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.impute import SimpleImputer
+
+target_column = 'Exited'
+train_df = train_df_original.copy()
+X_train = train_df.drop(columns=[target_column]).copy()
+y_train = train_df[target_column].copy()
+
+# Identify column types
+numeric_cols = ['CreditScore', 'Age', 'Tenure', 'Balance', 'NumOfProducts', 'EstimatedSalary']
+categorical_cols = ['Geography', 'Gender']
+drop_cols = ['CustomerId', 'Surname']
+
+X_train_clean = X_train.drop(columns=drop_cols)
+
+# Build numeric pipeline
+numeric_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='median')),
+    ('scaler', StandardScaler())
+])
+
+# Build categorical pipeline
+categorical_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='most_frequent')),
+    ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
+])
+
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('num', numeric_transformer, numeric_cols),
+        ('cat', categorical_transformer, categorical_cols)
+    ],
+    remainder='drop'
+)
+
+# GradientBoosting with fixed seed, manually chosen parameters
+gb = GradientBoostingClassifier(
+    n_estimators=200,
+    learning_rate=0.1,
+    max_depth=3,
+    random_state=42
+)
+
+pipeline = Pipeline(steps=[
+    ('preprocessor', preprocessor),
+    ('classifier', gb)
+])
+
+pipeline.fit(X_train_clean, y_train)
+print("GradientBoosting pipeline fitted successfully.")
+print("Classes seen:", pipeline.classes_)

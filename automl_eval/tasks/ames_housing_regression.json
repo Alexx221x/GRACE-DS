@@ -1,0 +1,156 @@
+{
+  "task_id": "ames_housing_regression",
+  "dataset_path": "data/AmesHousing.csv",
+  "target_column": "SalePrice",
+  "task_type": "regression",
+  "metric": "r2",
+  "description": "Predict the sale price of residential homes in Ames, Iowa. Regression task. Target: SalePrice (continuous, range ~13k–755k). Dataset has 2930 rows and 81 features (39 numeric, 43 categorical) with significant missing values (~15k total nulls across many columns).",
+  "plan_checklist": [
+    {
+      "id": "handle_missing",
+      "description": "Plan mentions handling missing values (many columns have nulls)",
+      "keywords": [
+        "missing",
+        "null",
+        "fillna",
+        "imput",
+        "nan",
+        "dropna"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "encode_categorical",
+      "description": "Plan mentions encoding categorical features (43 categorical columns)",
+      "keywords": [
+        "encod",
+        "one-hot",
+        "onehot",
+        "label_encod",
+        "target_encod",
+        "dummy",
+        "categorical",
+        "ordinal"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "feature_engineering",
+      "description": "Plan mentions feature engineering (total area, age, quality interactions)",
+      "keywords": [
+        "feature",
+        "area",
+        "age",
+        "quality",
+        "interact",
+        "polynomial",
+        "log",
+        "transform"
+      ],
+      "weight": 1.0,
+      "required": false
+    },
+    {
+      "id": "model_selection",
+      "description": "Plan mentions specific regression model(s)",
+      "keywords": [
+        "random forest",
+        "gradient boost",
+        "xgboost",
+        "lightgbm",
+        "ridge",
+        "lasso",
+        "elastic"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "outlier_handling",
+      "description": "Plan mentions handling outliers in SalePrice or features",
+      "keywords": [
+        "outlier",
+        "clip",
+        "winsor",
+        "skew",
+        "log transform"
+      ],
+      "weight": 0.7,
+      "required": false
+    },
+    {
+      "id": "metric_awareness",
+      "description": "Plan mentions the target metric (R²) or evaluation approach",
+      "keywords": [
+        "r2",
+        "r-squared",
+        "r_squared",
+        "metric",
+        "evaluat",
+        "mse",
+        "rmse"
+      ],
+      "weight": 0.7,
+      "required": false
+    }
+  ],
+  "time_budget_seconds": 300.0,
+  "max_steps": 30,
+  "oracle_score": 0.8988,
+  "baseline_score": 0.7434,
+  "metadata": {
+    "dataset_source": "kaggle_ames_housing",
+    "evaluation_aspects": [
+      "missing_values",
+      "categorical_encoding",
+      "feature_engineering",
+      "model_selection"
+    ],
+    "evaluation_mode": "iid_tabular_holdout",
+    "time_series_task": false
+  },
+  "stage_limits": {
+    "PLAN": {
+      "max_steps": 3,
+      "max_seconds": 45.0,
+      "max_consecutive_steps": 2
+    },
+    "EDA": {
+      "max_steps": 5,
+      "max_seconds": 90.0,
+      "max_consecutive_steps": 3
+    },
+    "FEATURE_ENGINEERING": {
+      "max_steps": 6,
+      "max_seconds": 120.0,
+      "max_consecutive_steps": 3
+    },
+    "MODEL": {
+      "max_steps": 6,
+      "max_seconds": 180.0,
+      "max_consecutive_steps": 3
+    },
+    "VALIDATE": {
+      "max_steps": 5,
+      "max_seconds": 60.0,
+      "max_consecutive_steps": 2
+    },
+    "CODE": {
+      "max_steps": 6,
+      "max_seconds": 150.0,
+      "max_consecutive_steps": 3
+    },
+    "CODE_FIX": {
+      "max_steps": 5,
+      "max_seconds": 120.0,
+      "max_consecutive_steps": 3
+    },
+    "FINAL_SUBMIT": {
+      "max_steps": 1,
+      "max_seconds": 60.0,
+      "max_consecutive_steps": 1
+    }
+  }
+}

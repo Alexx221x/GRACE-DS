@@ -1,0 +1,123 @@
+{
+  "task_id": "bench_predict_students_dropout_academic_success",
+  "dataset_path": "data/bench_datasets/predict_students_dropout_academic_success.csv",
+  "target_column": "Target_encoded",
+  "task_type": "multiclass_classification",
+  "metric": "f1",
+  "drop_columns": [
+    "Curricular units 1st sem (credited)",
+    "Curricular units 1st sem (enrolled)",
+    "Curricular units 1st sem (evaluations)",
+    "Curricular units 1st sem (approved)",
+    "Curricular units 1st sem (grade)",
+    "Curricular units 1st sem (without evaluations)",
+    "Curricular units 2nd sem (credited)",
+    "Curricular units 2nd sem (enrolled)",
+    "Curricular units 2nd sem (evaluations)",
+    "Curricular units 2nd sem (approved)",
+    "Curricular units 2nd sem (grade)",
+    "Curricular units 2nd sem (without evaluations)"
+  ],
+  "description": "Predict student academic outcome from enrollment, demographic, course, and macroeconomic variables while excluding semester outcome columns from the model features. Multiclass target Target_encoded is 0 = Dropout, 1 = Enrolled, 2 = Graduate; metric is macro F1. Profile: 4424 rows, 36 source features before manifest-level drops, no observed missing values, target counts 1421/794/2209, many categorical/ordinal codes.",
+  "plan_checklist": [
+    {
+      "id": "inspect_schema_and_target",
+      "description": "Plan includes inspecting schema, feature types, target distribution, and basic data quality before modeling.",
+      "keywords": [
+        "schema",
+        "columns",
+        "types",
+        "target",
+        "distribution",
+        "overview",
+        "describe",
+        "eda"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "check_missing_values",
+      "description": "Plan includes checking and handling missing values if present.",
+      "keywords": [
+        "missing",
+        "null",
+        "nan",
+        "imput",
+        "fillna",
+        "dropna"
+      ],
+      "weight": 0.8,
+      "required": true
+    },
+    {
+      "id": "respect_encoded_features",
+      "description": "Plan recognizes numeric-coded categorical/ordinal/binary features and avoids treating all columns as arbitrary continuous variables.",
+      "keywords": [
+        "encoded",
+        "ordinal",
+        "binary",
+        "categorical",
+        "indicator",
+        "coded"
+      ],
+      "weight": 0.8,
+      "required": false
+    },
+    {
+      "id": "handle_class_imbalance",
+      "description": "Plan includes checking class balance and using an imbalance-aware validation/modeling strategy when needed.",
+      "keywords": [
+        "imbalance",
+        "class balance",
+        "stratified",
+        "class weight",
+        "minority",
+        "rare class"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "metric_aware_validation",
+      "description": "Plan uses the task metric and an appropriate validation split or cross-validation.",
+      "keywords": [
+        "macro",
+        "f1",
+        "multiclass",
+        "metric",
+        "validation",
+        "cross-val",
+        "cv",
+        "kfold",
+        "stratified"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "choose_suitable_tabular_model",
+      "description": "Plan chooses model families suitable for the dataset size and tabular feature mix.",
+      "keywords": [
+        "logistic",
+        "random forest",
+        "gradient boost",
+        "histgradient",
+        "xgboost",
+        "lightgbm",
+        "catboost",
+        "tree"
+      ],
+      "weight": 0.9,
+      "required": true
+    }
+  ],
+  "time_budget_seconds": 300.0,
+  "max_steps": 30,
+  "metadata": {
+    "dataset_source": "UCI Predict Students Dropout and Academic Success",
+    "source_url": "https://archive.ics.uci.edu/dataset/697/predict+students+dropout+and+academic+success",
+    "bench_preprocessing": "Converted semicolon CSV to comma CSV, cleaned one tabbed header, encoded Target, and removed the original string Target column.",
+    "drop_columns_rationale": "Semester curricular-unit counts, approvals, evaluations, and grades are excluded at manifest level to avoid future academic-performance leakage in an early-outcome benchmark."
+  }
+}

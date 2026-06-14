@@ -1,0 +1,3 @@
+ACTION: PLAN
+
+First, I will create a simple replayable baseline LogisticRegression model (family 1) before EDA, integrating preprocessing into a Pipeline. Later, after EDA and potential feature engineering, I will try a RandomForestClassifier (family 2) and compare validation ROC-AUC to guide further improvements. Preprocessing: drop CustomerId and Surname (high-cardinality identifiers), one-hot encode Geography and Gender, scale numeric features with StandardScaler, and use class_weight='balanced' to handle possible imbalance. No missing values to impute, but SimpleImputer(strategy='most_frequent') for categorical and SimpleImputer(strategy='median') for numeric can be added for robustness. All steps inside a single Pipeline to ensure replayability.

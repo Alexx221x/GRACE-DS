@@ -1,0 +1,11 @@
+ACTION: PLAN
+
+Strategy: Create a simple replayable RandomForestClassifier baseline immediately (next action) before deeper EDA. After EDA and feature engineering, try a second distinct family (LogisticRegression with appropriate preprocessing). Use manual fixed hyperparameters, target encoding for Geography, drop high-cardinality identifiers. Validate at least three candidates, two families, then STOP_WORKING.
+
+Plan:
+1. MODEL: Baseline pipeline with ColumnTransformer (numeric impute+scale, categorical OneHotEncode) + RandomForestClassifier(n_estimators=200, max_depth=10, random_state=42). Drop CustomerId, Surname. Register as `pipeline`.
+2. EDA: Inspect target distribution, outlier/leakage checks, feature correlations, class balance.
+3. FEATURE_ENGINEERING: Create engineered features (e.g., Balance/EstimatedSalary ratio, Age bins, interaction terms) if useful.
+4. MODEL: Second family — LogisticRegression with same preprocessing but with polynomial features or interaction manually.
+5. After each MODEL, let automatic validation evaluate; iterate based on feedback.
+6. STOP_WORKING after at least 3 validated candidates across 2 families and feedback is stable.

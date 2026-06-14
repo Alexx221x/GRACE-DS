@@ -1,0 +1,3 @@
+ACTION: PLAN
+
+Will create a simple RandomForestClassifier baseline replayable pipeline first (before deep EDA) to establish a validated candidate. Then perform EDA to inspect distributions, cardinality, imbalance, and feature-target relationships. Follow with feature engineering (encoding, scaling, perhaps feature creation) and a second manually-tuned LogisticRegression candidate for diversity. Each MODEL action registers a replayable artefact automatically validated by the evaluator. Expect at least two distinct model families before STOP_WORKING.

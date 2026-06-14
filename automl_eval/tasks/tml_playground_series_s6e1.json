@@ -1,0 +1,38 @@
+{
+  "task_id": "tml_playground_series_s6e1",
+  "dataset_path": "data/tml_bench/playground_series_s6e1.csv",
+  "target_column": "exam_score",
+  "task_type": "regression",
+  "metric": "rmse",
+  "description": "TML-bench Kaggle competition 'playground-series-s6e1'. Strict tabular task with a deterministic public/private-holdout split reproduced as a predefined GRACE split.",
+  "plan_checklist": [],
+  "time_budget_seconds": 1800.0,
+  "max_steps": 30,
+  "oracle_score": -8.8161,
+  "baseline_score": -18.8547,
+  "metadata": {
+    "dataset_source": "tml-bench/playground-series-s6e1",
+    "suite": "TML-bench",
+    "citation": "Pinchuk, TML-bench, 2026 (arXiv 2603.05764)",
+    "contamination_note": "Recent Kaggle competition selected for contamination control (release post-dates evaluated-model cutoffs).",
+    "time_series_task": false,
+    "evaluation_mode": "private_holdout",
+    "n_rows": 630000,
+    "n_features": 11
+  },
+  "split_strategy": {
+    "method": "predefined",
+    "split_column": "__split__",
+    "train_values": [
+      "train"
+    ],
+    "valid_values": [
+      "valid"
+    ],
+    "test_values": [
+      "test"
+    ],
+    "drop_split_columns": true,
+    "rationale": "Reproduce TML-bench private-holdout scoring via a predefined split."
+  }
+}

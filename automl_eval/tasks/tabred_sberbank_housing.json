@@ -1,0 +1,39 @@
+{
+  "task_id": "tabred_sberbank_housing",
+  "dataset_path": "data/tabred/sberbank_housing.csv",
+  "target_column": "target",
+  "task_type": "regression",
+  "metric": "rmse",
+  "description": "Predict (log) residential price per square metre (Sberbank). Industry tabular data with an official temporal train/valid/test split (TabReD, NeurIPS 2024 D&B).",
+  "plan_checklist": [],
+  "time_budget_seconds": 1800.0,
+  "max_steps": 30,
+  "oracle_score": -0.2629,
+  "baseline_score": -0.3994,
+  "metadata": {
+    "dataset_source": "tabred/sberbank-housing",
+    "suite": "TabReD",
+    "citation": "Rubachev et al., TabReD, NeurIPS 2024 Datasets & Benchmarks (arXiv 2406.19380)",
+    "time_series_task": false,
+    "evaluation_mode": "predefined_temporal_split",
+    "temporal_split_note": "Rows are i.i.d. tabular records; the official split is temporal (distribution shift).",
+    "contamination_note": "Industry dataset, far less common than UCI/OpenML; low LLM-memorisation risk.",
+    "n_rows_used": 28321,
+    "n_features": 392
+  },
+  "split_strategy": {
+    "method": "predefined",
+    "split_column": "__split__",
+    "train_values": [
+      "train"
+    ],
+    "valid_values": [
+      "valid"
+    ],
+    "test_values": [
+      "test"
+    ],
+    "drop_split_columns": true,
+    "rationale": "Honour TabReD's official temporal train/valid/test split."
+  }
+}

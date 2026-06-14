@@ -1,0 +1,43 @@
+ACTION: EDA
+
+```python
+# EDA: inspect target distribution, feature types, correlations, and potential issues
+import pandas as pd
+import numpy as np
+
+# Use the protected original snapshot for analysis
+train_orig = train_df_original.copy()
+
+# Target distribution
+print("Target distribution:")
+print(train_orig['Exited'].value_counts(normalize=True))
+print()
+
+# Check dtypes and basic stats
+print("Feature dtypes:")
+print(train_orig.dtypes)
+print()
+
+# Check for high cardinality features
+for col in train_orig.select_dtypes(include='object').columns:
+    print(f"{col}: {train_orig[col].nunique()} unique values")
+print()
+
+# Numeric features distribution
+num_cols = train_orig.select_dtypes(include=['int64','float64']).columns.drop(['Exited','CustomerId'])
+print("Numeric features describe:")
+print(train_orig[num_cols].describe())
+print()
+
+# Check Geography and Gender counts
+print("Geography value counts:")
+print(train_orig['Geography'].value_counts())
+print()
+print("Gender value counts:")
+print(train_orig['Gender'].value_counts())
+print()
+
+# Check correlation with target
+print("Correlation of numeric features with Exited:")
+print(train_orig[num_cols].corrwith(train_orig['Exited']).sort_values(ascending=False))
+```

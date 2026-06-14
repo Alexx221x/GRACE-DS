@@ -1,0 +1,68 @@
+# macOS
+.DS_Store
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments and package caches
+.venv/
+venv/
+env/
+.uv-cache/
+
+# Notebook/runtime checkpoints
+.ipynb_checkpoints/
+
+# Editors and IDEs
+.idea/
+.vscode/
+.cursor/
+.zed/
+*.swp
+*.swo
+*~
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Local logs and temporary files
+*.log
+*.tmp
+*.bak
+
+# Local generated outputs
+outputs/
+external/
+
+
+# macOS
+.DS_Store
+__MACOSX/
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments and package caches
+.venv/
+venv/
+env/
+.uv-cache/
+
+# Notebook/runtime checkpoints
+.ipynb_checkpoints/

@@ -1,0 +1,82 @@
+{
+  "models": [
+    "deepseek/deepseek-v4-flash"
+  ],
+  "task_ids": [
+    "synthetic_regression_known_dgp",
+    "tml_bank_customer_churn_ict_u_ai"
+  ],
+  "regimes": [
+    "single_shot",
+    "n_restarts_from_scratch",
+    "n_restarts_call_matched_upper_bound",
+    "unstructured_agent",
+    "fixed_stage_iterative",
+    "flexible_iterative",
+    "flexible_compact_feedback",
+    "fixed_without_plan",
+    "fixed_without_eda",
+    "fixed_without_feature_engineering",
+    "flexible_without_eda",
+    "flexible_without_feature_engineering",
+    "reward_maximizer_hidden_hints",
+    "reward_maximizer_disclosed_criteria",
+    "red_team_vs_validators"
+  ],
+  "split_seeds": [
+    42,
+    67
+  ],
+  "temperature_schedule": [
+    0.7
+  ],
+  "repeats_per_condition": 2,
+  "llm_seed_base": 1000,
+  "temperature": null,
+  "seeds": null,
+  "max_actions": 8,
+  "max_tokens": 24000,
+  "total_token_budget": 200000,
+  "n_restarts": 4,
+  "dataset_subsample_factor": 10,
+  "num_workers": 8,
+  "episode_timeout_sec": 2800,
+  "stateless_sandbox_timeout_sec": 600,
+  "stateful_sandbox_timeout_sec": 800,
+  "stateless_task_time_budget_sec": 1200,
+  "stateful_task_time_budget_sec": 2400,
+  "stateful_stage_time_budget_multiplier": 6.0,
+  "dataset_download_timeout_sec": 14400,
+  "interleave_by_model": true,
+  "max_concurrent_per_model": 0,
+  "auto_finalize_on_exhaustion": true,
+  "paraphrase_prompts": true,
+  "performance_normalization": true,
+  "openrouter_base_url": "https://openrouter.ai/api/v1/chat/completions",
+  "api_key_env": "OPENROUTER_API_KEY",
+  "request_timeout_sec": 300,
+  "max_retries": 5,
+  "provider_preferences": {
+    "deepseek/deepseek-v4-flash": {
+      "only": [
+        "deepseek"
+      ],
+      "allow_fallbacks": false
+    },
+    "deepseek/deepseek-v4-pro": {
+      "only": [
+        "deepseek"
+      ],
+      "allow_fallbacks": false
+    }
+  },
+  "reasoning_preferences": {},
+  "debug_trace_enabled": true,
+  "log_executable_code": true,
+  "log_raw_llm_responses": true,
+  "task_dirs": [
+    "automl_eval/tasks"
+  ],
+  "output_dir": "outputs/grace_paper_grid2",
+  "run_name": "final2"
+}

@@ -1,0 +1,51 @@
+{
+  "task_id": "synthetic_classification_known_dgp",
+  "dataset_path": "data/synthetic/synthetic_classification_seed42.csv",
+  "target_column": "target",
+  "task_type": "binary_classification",
+  "metric": "roc_auc",
+  "description": "Synthetic binary classification with a known data-generating process (5 informative + 5 redundant + 10 noise features). Memorisation is impossible by construction; ground-truth informative features are recorded for feature-relevance evaluation.",
+  "plan_checklist": [],
+  "time_budget_seconds": 300.0,
+  "max_steps": 30,
+  "oracle_score": 0.9647,
+  "baseline_score": 0.5,
+  "metadata": {
+    "dataset_source": "sklearn.make_classification",
+    "suite": "synthetic",
+    "dgp": {
+      "n_samples": 10000,
+      "n_features": 20,
+      "n_informative": 5,
+      "n_redundant": 5,
+      "flip_y": 0.02,
+      "class_sep": 0.8,
+      "seed": 42
+    },
+    "ground_truth_informative_features": [
+      "feat_000",
+      "feat_001",
+      "feat_002",
+      "feat_003",
+      "feat_004"
+    ],
+    "ground_truth_redundant_features": [
+      "feat_005",
+      "feat_006",
+      "feat_007",
+      "feat_008",
+      "feat_009"
+    ],
+    "time_series_task": false,
+    "contamination_note": "Generated on-the-fly; zero memorisation risk."
+  },
+  "split_strategy": {
+    "method": "random",
+    "train_size": 0.7,
+    "valid_size": 0.15,
+    "test_size": 0.15,
+    "stratify": true,
+    "drop_split_columns": true,
+    "rationale": "Stratified holdout for synthetic-DGP classification."
+  }
+}

@@ -1,0 +1,41 @@
+ACTION: EDA
+
+Quick inspection of target distribution, feature types, and potential issues before building baseline.
+
+```python
+import pandas as pd
+import numpy as np
+
+print("=== Target distribution ===")
+print(train_df['Exited'].value_counts())
+print(train_df['Exited'].value_counts(normalize=True))
+
+print("\n=== Feature dtypes ===")
+print(train_df.dtypes)
+
+print("\n=== Categorical columns ===")
+cat_cols = train_df.select_dtypes(include='object').columns.tolist()
+print(cat_cols)
+
+print("\n=== Numerical columns ===")
+num_cols = train_df.select_dtypes(include=[np.number]).columns.tolist()
+num_cols.remove('Exited')
+print(num_cols)
+
+print("\n=== Unique counts per categorical ===")
+for c in cat_cols:
+    print(f"{c}: {train_df[c].nunique()} unique")
+
+print("\n=== ID columns check ===")
+print("CustomerId nunique:", train_df['CustomerId'].nunique())
+print("Surname nunique:", train_df['Surname'].nunique())
+
+print("\n=== Numerical stats ===")
+print(train_df[num_cols].describe())
+
+print("\n=== Missing values ===")
+print(train_df.isnull().sum())
+
+print("\n=== Correlation with target (numeric) ===")
+print(train_df[num_cols + ['Exited']].corr()['Exited'].sort_values(ascending=False))
+```

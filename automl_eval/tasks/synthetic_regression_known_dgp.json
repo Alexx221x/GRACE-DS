@@ -1,0 +1,57 @@
+{
+  "task_id": "synthetic_regression_known_dgp",
+  "dataset_path": "data/synthetic/synthetic_regression_seed42.csv",
+  "target_column": "target",
+  "task_type": "regression",
+  "metric": "rmse",
+  "description": "Synthetic regression with a known linear data-generating process (3 informative features with known coefficients out of 15). Memorisation is impossible by construction; ground-truth informative features are recorded.",
+  "plan_checklist": [],
+  "time_budget_seconds": 300.0,
+  "max_steps": 30,
+  "oracle_score": -7.7499,
+  "baseline_score": -116.6224,
+  "metadata": {
+    "dataset_source": "sklearn.make_regression",
+    "suite": "synthetic",
+    "dgp": {
+      "n_samples": 10000,
+      "n_features": 15,
+      "n_informative": 3,
+      "noise": 0.5,
+      "seed": 42,
+      "true_coefficients": [
+        47.542993107115194,
+        81.08849711290846,
+        68.1317651934616,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "ground_truth_informative_features": [
+      "feat_000",
+      "feat_001",
+      "feat_002"
+    ],
+    "time_series_task": false,
+    "contamination_note": "Generated on-the-fly; zero memorisation risk."
+  },
+  "split_strategy": {
+    "method": "random",
+    "train_size": 0.7,
+    "valid_size": 0.15,
+    "test_size": 0.15,
+    "stratify": false,
+    "drop_split_columns": true,
+    "rationale": "Random holdout for synthetic-DGP regression."
+  }
+}

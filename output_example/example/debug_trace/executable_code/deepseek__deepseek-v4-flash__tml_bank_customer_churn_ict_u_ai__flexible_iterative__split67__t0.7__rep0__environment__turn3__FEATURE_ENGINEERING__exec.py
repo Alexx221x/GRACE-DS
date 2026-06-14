@@ -1,0 +1,28 @@
+import pandas as pd
+import numpy as np
+from sklearn.base import BaseEstimator, TransformerMixin
+
+class FeatureEngineer(BaseEstimator, TransformerMixin):
+    def fit(self, X, y=None):
+        return self
+    
+    def transform(self, X):
+        X = X.copy()
+        # Age groups
+        X['AgeGroup'] = pd.cut(X['Age'], bins=[0, 30, 40, 50, 60, 100], labels=[0, 1, 2, 3, 4]).astype(int)
+        # Balance to salary ratio (avoid division by zero)
+        X['BalanceSalaryRatio'] = X['Balance'] / (X['EstimatedSalary'] + 1e-5)
+        # Tenure to Age ratio
+        X['TenureAgeRatio'] = X['Tenure'] / (X['Age'] + 1e-5)
+        # NumOfProducts times IsActiveMember
+        X['ProdsXActive'] = X['NumOfProducts'] * X['IsActiveMember']
+        # Drop raw columns that are now represented or less useful
+        X = X.drop(columns=['CustomerId', 'Surname', 'EstimatedSalary', 'Tenure'])
+        return X
+
+# Apply to train for inspection (not to modify original)
+fe = FeatureEngineer()
+X_transformed = fe.transform(train_df_original.drop(columns=[target_column]))
+print("Engineered columns:", list(X_transformed.columns))
+print("Shape after engineering:", X_transformed.shape)
+print("Nulls after engineering:", X_transformed.isnull().sum().sum())

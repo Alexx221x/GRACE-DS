@@ -1,0 +1,27 @@
+ACTION: EDA
+
+```python
+import pandas as pd
+import numpy as np
+
+print("train_df shape:", train_df.shape)
+print("train_df columns:", train_df.columns.tolist())
+print("target distribution:\n", train_df['Exited'].value_counts())
+print("target distribution (%):\n", train_df['Exited'].value_counts(normalize=True))
+print("\ntrain_df dtypes:\n", train_df.dtypes)
+print("\ntrain_df head:\n", train_df.head())
+print("\ntrain_df describe (numeric):\n", train_df.describe())
+
+# Check for missing values
+print("\nMissing values:\n", train_df.isnull().sum())
+
+# Check cardinality of categorical columns
+for col in ['Geography', 'Gender', 'Surname']:
+    print(f"\n{col} unique values: {train_df[col].nunique()}")
+    if train_df[col].nunique() < 20:
+        print(f"  Value counts:\n{train_df[col].value_counts()}")
+
+# Check CustomerId: should be dropped
+print("\nCustomerId unique count:", train_df['CustomerId'].nunique())
+print("CustomerId is unique?", train_df['CustomerId'].is_unique)
+```

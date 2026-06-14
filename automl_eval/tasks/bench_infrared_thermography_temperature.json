@@ -1,0 +1,117 @@
+{
+  "task_id": "bench_infrared_thermography_temperature",
+  "dataset_path": "data/bench_datasets/infrared_thermography_temperature.csv",
+  "target_column": "aveOralF",
+  "task_type": "regression",
+  "metric": "r2",
+  "drop_columns": [
+    "T_OR1",
+    "T_OR_Max1"
+  ],
+  "description": "Predict fast-mode oral temperature aveOralF from thermal-image temperature readings and environment/patient metadata while excluding direct oral-region proxy temperatures. Profile: 1020 rows, 33 source features before manifest-level drops, regression target aveOralF, categorical Gender/Age/Ethnicity, two missing values in Distance, and many continuous thermal sensor readings.",
+  "plan_checklist": [
+    {
+      "id": "inspect_schema_and_target",
+      "description": "Plan includes inspecting schema, feature types, target distribution/range, and basic data quality before modeling.",
+      "keywords": [
+        "schema",
+        "columns",
+        "types",
+        "target",
+        "distribution",
+        "range",
+        "overview",
+        "describe",
+        "eda"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "check_missing_values",
+      "description": "Plan includes checking and handling missing values if present.",
+      "keywords": [
+        "missing",
+        "null",
+        "nan",
+        "imput",
+        "fillna",
+        "dropna"
+      ],
+      "weight": 0.8,
+      "required": true
+    },
+    {
+      "id": "encode_categorical_features",
+      "description": "Plan includes identifying and encoding categorical/string features before regression.",
+      "keywords": [
+        "categorical",
+        "string",
+        "object",
+        "encod",
+        "one-hot",
+        "onehot",
+        "dummy",
+        "label"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "metric_aware_validation",
+      "description": "Plan uses the task metric and an appropriate validation split or cross-validation.",
+      "keywords": [
+        "r2",
+        "r-squared",
+        "metric",
+        "validation",
+        "cross-val",
+        "cv",
+        "kfold"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "choose_suitable_regression_model",
+      "description": "Plan chooses model families suitable for the dataset size and regression feature mix.",
+      "keywords": [
+        "linear",
+        "ridge",
+        "random forest",
+        "gradient boost",
+        "histgradient",
+        "xgboost",
+        "lightgbm",
+        "catboost",
+        "tree"
+      ],
+      "weight": 0.9,
+      "required": true
+    },
+    {
+      "id": "scaling_when_needed",
+      "description": "Plan considers scaling/normalization for linear, distance-based, kernel, or neural models.",
+      "keywords": [
+        "scale",
+        "scaler",
+        "standardize",
+        "normalize",
+        "ridge",
+        "linear",
+        "svr",
+        "neural"
+      ],
+      "weight": 0.5,
+      "required": false
+    }
+  ],
+  "time_budget_seconds": 300.0,
+  "max_steps": 30,
+  "metadata": {
+    "dataset_source": "UCI Infrared Thermography Temperature",
+    "source_url": "https://archive.ics.uci.edu/dataset/925/infrared+thermography+temperature+dataset",
+    "bench_preprocessing": "Removed SubjectID and aveOralM so the monitor-mode oral temperature is not used as a direct feature for aveOralF.",
+    "drop_columns_rationale": "T_OR1 and T_OR_Max1 are excluded at manifest level because they are oral-region temperature measurements and direct proxies for aveOralF."
+  }
+}

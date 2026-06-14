@@ -1,0 +1,126 @@
+{
+  "task_id": "bench_rt_iot2022",
+  "dataset_path": "data/bench_datasets/rt_iot2022.csv",
+  "target_column": "Attack_type_encoded",
+  "task_type": "multiclass_classification",
+  "metric": "f1",
+  "description": "Predict RT-IoT2022 network attack type from flow and packet statistics. Multiclass target Attack_type_encoded is a numeric class label; metric is macro F1. Profile: 123117 rows, 83 features, string categorical fields proto and service, no observed missing values, severe 12-class imbalance with majority class around 77%, and one constant feature.",
+  "plan_checklist": [
+    {
+      "id": "inspect_schema_and_target",
+      "description": "Plan includes inspecting schema, feature types, target distribution, and basic data quality before modeling.",
+      "keywords": [
+        "schema",
+        "columns",
+        "types",
+        "target",
+        "distribution",
+        "overview",
+        "describe",
+        "eda"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "check_missing_values",
+      "description": "Plan includes checking and handling missing values if present.",
+      "keywords": [
+        "missing",
+        "null",
+        "nan",
+        "imput",
+        "fillna",
+        "dropna"
+      ],
+      "weight": 0.8,
+      "required": true
+    },
+    {
+      "id": "encode_categorical_features",
+      "description": "Plan includes identifying and encoding categorical or string features.",
+      "keywords": [
+        "categorical",
+        "string",
+        "object",
+        "encod",
+        "one-hot",
+        "onehot",
+        "dummy",
+        "label"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "handle_class_imbalance",
+      "description": "Plan includes checking class balance and using an imbalance-aware validation/modeling strategy when needed.",
+      "keywords": [
+        "imbalance",
+        "class balance",
+        "stratified",
+        "class weight",
+        "minority",
+        "rare class"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "check_constant_low_variance",
+      "description": "Plan includes checking constant or low-variance features and dropping/ignoring them when useful.",
+      "keywords": [
+        "constant",
+        "low variance",
+        "variance",
+        "drop",
+        "feature selection"
+      ],
+      "weight": 0.7,
+      "required": false
+    },
+    {
+      "id": "metric_aware_validation",
+      "description": "Plan uses the task metric and an appropriate validation split or cross-validation.",
+      "keywords": [
+        "macro",
+        "f1",
+        "multiclass",
+        "metric",
+        "validation",
+        "cross-val",
+        "cv",
+        "kfold",
+        "stratified"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "choose_suitable_tabular_model",
+      "description": "Plan chooses model families suitable for the dataset size and tabular feature mix.",
+      "keywords": [
+        "logistic",
+        "random forest",
+        "gradient boost",
+        "histgradient",
+        "xgboost",
+        "lightgbm",
+        "catboost",
+        "tree",
+        "efficient",
+        "time",
+        "sample"
+      ],
+      "weight": 0.9,
+      "required": true
+    }
+  ],
+  "time_budget_seconds": 600.0,
+  "max_steps": 30,
+  "metadata": {
+    "dataset_source": "UCI RT-IoT2022",
+    "source_url": "https://archive.ics.uci.edu/dataset/942/rt-iot2022",
+    "bench_preprocessing": "Removed id, encoded Attack_type, and removed the original string target column."
+  }
+}

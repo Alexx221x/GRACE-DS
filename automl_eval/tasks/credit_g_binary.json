@@ -1,0 +1,149 @@
+{
+  "task_id": "credit_g_binary",
+  "dataset_path": "data/credit-g.csv",
+  "target_column": "class",
+  "task_type": "binary_classification",
+  "metric": "roc_auc",
+  "description": "Predict credit risk (good vs bad) for loan applicants using financial and personal attributes. Binary classification task. Target: class (good / bad). Dataset has 1000 rows with 7 numeric and 14 categorical features. No missing values.",
+  "plan_checklist": [
+    {
+      "id": "encode_categorical",
+      "description": "Plan mentions encoding categorical features (14 categorical columns)",
+      "keywords": [
+        "encod",
+        "one-hot",
+        "onehot",
+        "label_encod",
+        "target_encod",
+        "dummy",
+        "categorical",
+        "get_dummies"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "feature_engineering",
+      "description": "Plan mentions feature engineering or feature selection",
+      "keywords": [
+        "feature",
+        "select",
+        "correlat",
+        "new column",
+        "transform",
+        "interact"
+      ],
+      "weight": 1.0,
+      "required": false
+    },
+    {
+      "id": "model_selection",
+      "description": "Plan mentions specific model(s) to try",
+      "keywords": [
+        "logistic",
+        "random forest",
+        "gradient boost",
+        "xgboost",
+        "lightgbm",
+        "catboost"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "class_imbalance",
+      "description": "Plan mentions handling class imbalance (700 good vs 300 bad)",
+      "keywords": [
+        "imbalance",
+        "weight",
+        "oversamp",
+        "smote",
+        "class_weight",
+        "stratif"
+      ],
+      "weight": 0.8,
+      "required": false
+    },
+    {
+      "id": "metric_awareness",
+      "description": "Plan mentions the target metric (ROC AUC)",
+      "keywords": [
+        "roc",
+        "auc",
+        "metric",
+        "evaluat"
+      ],
+      "weight": 0.7,
+      "required": false
+    },
+    {
+      "id": "cross_validation",
+      "description": "Plan mentions cross-validation or validation strategy",
+      "keywords": [
+        "cross-val",
+        "cv",
+        "kfold",
+        "stratified",
+        "validation"
+      ],
+      "weight": 0.5,
+      "required": false
+    }
+  ],
+  "time_budget_seconds": 300.0,
+  "max_steps": 30,
+  "oracle_score": 0.8165,
+  "baseline_score": 0.6846,
+  "metadata": {
+    "dataset_source": "openml_credit_g",
+    "evaluation_aspects": [
+      "categorical_encoding",
+      "class_imbalance",
+      "model_selection"
+    ],
+    "evaluation_mode": "iid_tabular_holdout",
+    "time_series_task": false
+  },
+  "stage_limits": {
+    "PLAN": {
+      "max_steps": 3,
+      "max_seconds": 45.0,
+      "max_consecutive_steps": 2
+    },
+    "EDA": {
+      "max_steps": 5,
+      "max_seconds": 90.0,
+      "max_consecutive_steps": 3
+    },
+    "FEATURE_ENGINEERING": {
+      "max_steps": 6,
+      "max_seconds": 120.0,
+      "max_consecutive_steps": 3
+    },
+    "MODEL": {
+      "max_steps": 6,
+      "max_seconds": 180.0,
+      "max_consecutive_steps": 3
+    },
+    "VALIDATE": {
+      "max_steps": 5,
+      "max_seconds": 60.0,
+      "max_consecutive_steps": 2
+    },
+    "CODE": {
+      "max_steps": 6,
+      "max_seconds": 150.0,
+      "max_consecutive_steps": 3
+    },
+    "CODE_FIX": {
+      "max_steps": 5,
+      "max_seconds": 120.0,
+      "max_consecutive_steps": 3
+    },
+    "FINAL_SUBMIT": {
+      "max_steps": 1,
+      "max_seconds": 60.0,
+      "max_consecutive_steps": 1
+    }
+  }
+}

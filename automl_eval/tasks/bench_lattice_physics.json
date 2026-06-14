@@ -1,0 +1,97 @@
+{
+  "task_id": "bench_lattice_physics",
+  "dataset_path": "data/bench_datasets/lattice_physics.csv",
+  "target_column": "k_inf",
+  "task_type": "regression",
+  "metric": "r2",
+  "description": "Predict the infinite multiplication factor k_inf from 39 fuel-pin enrichment features in a PWR fuel assembly lattice-physics simulation dataset. Profile: 24000 rows, 39 dense continuous numeric features, no observed missing values, pure nonlinear regression target k_inf.",
+  "plan_checklist": [
+    {
+      "id": "inspect_schema_and_target",
+      "description": "Plan includes inspecting schema, feature types, target distribution/range, and basic data quality before modeling.",
+      "keywords": [
+        "schema",
+        "columns",
+        "types",
+        "target",
+        "distribution",
+        "range",
+        "overview",
+        "describe",
+        "eda"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "confirm_no_missing_heavy_imputation",
+      "description": "Plan includes checking missingness and avoiding unnecessary heavy imputation if none is present.",
+      "keywords": [
+        "missing",
+        "null",
+        "nan",
+        "no missing",
+        "imput"
+      ],
+      "weight": 0.5,
+      "required": false
+    },
+    {
+      "id": "metric_aware_validation",
+      "description": "Plan uses the task metric and an appropriate validation split or cross-validation.",
+      "keywords": [
+        "r2",
+        "r-squared",
+        "metric",
+        "validation",
+        "cross-val",
+        "cv",
+        "kfold"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "choose_suitable_regression_model",
+      "description": "Plan chooses model families suitable for the dataset size and regression feature mix.",
+      "keywords": [
+        "linear",
+        "ridge",
+        "random forest",
+        "gradient boost",
+        "histgradient",
+        "xgboost",
+        "lightgbm",
+        "catboost",
+        "tree",
+        "nonlinear",
+        "interaction"
+      ],
+      "weight": 0.9,
+      "required": true
+    },
+    {
+      "id": "scaling_when_needed",
+      "description": "Plan considers scaling/normalization for linear, distance-based, kernel, or neural models.",
+      "keywords": [
+        "scale",
+        "scaler",
+        "standardize",
+        "normalize",
+        "ridge",
+        "linear",
+        "svr",
+        "neural"
+      ],
+      "weight": 0.5,
+      "required": false
+    }
+  ],
+  "time_budget_seconds": 300.0,
+  "max_steps": 30,
+  "metadata": {
+    "dataset_source": "UCI Lattice-physics PWR fuel assembly neutronics simulation results",
+    "source_url": "https://archive.ics.uci.edu/dataset/1091/lattice-physics+(pwr+fuel+assembly+neutronics+simulation+results)",
+    "bench_preprocessing": "Converted whitespace data to comma CSV, assigned feature names enrichment_01..enrichment_39, used first output k_inf as target, and omitted PPPF from features."
+  }
+}

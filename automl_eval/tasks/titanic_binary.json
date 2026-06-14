@@ -1,0 +1,182 @@
+{
+  "task_id": "titanic_binary",
+  "dataset_path": "data/titanic.csv",
+  "target_column": "Survived",
+  "task_type": "binary_classification",
+  "metric": "roc_auc",
+  "description": "Predict passenger survival on the Titanic. Binary classification task. Target: Survived (0 = No, 1 = Yes). Use the provided train data to build a model and predict on validation set.",
+  "plan_checklist": [
+    {
+      "id": "handle_missing",
+      "description": "Plan mentions handling missing values (Age, Cabin, Embarked have nulls)",
+      "keywords": [
+        "missing",
+        "null",
+        "fillna",
+        "imput",
+        "nan"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "encode_categorical",
+      "description": "Plan mentions encoding categorical features (Sex, Embarked, Cabin)",
+      "keywords": [
+        "encod",
+        "one-hot",
+        "onehot",
+        "label_encod",
+        "target_encod",
+        "dummy",
+        "categorical"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "feature_engineering",
+      "description": "Plan mentions creating new features (FamilySize, Title, etc.)",
+      "keywords": [
+        "feature",
+        "familysize",
+        "title",
+        "extract",
+        "new column"
+      ],
+      "weight": 1.0,
+      "required": false
+    },
+    {
+      "id": "model_selection",
+      "description": "Plan mentions specific model(s) to try",
+      "keywords": [
+        "lightgbm",
+        "xgboost",
+        "catboost",
+        "random forest",
+        "logistic",
+        "gradient boost"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "cross_validation",
+      "description": "Plan mentions cross-validation or train/valid split strategy",
+      "keywords": [
+        "cross-val",
+        "cv",
+        "kfold",
+        "stratified",
+        "validation"
+      ],
+      "weight": 0.8,
+      "required": false
+    },
+    {
+      "id": "scaling",
+      "description": "Plan mentions scaling/normalization of numeric features",
+      "keywords": [
+        "scale",
+        "scaler",
+        "normalize",
+        "standardize"
+      ],
+      "weight": 0.5,
+      "required": false
+    },
+    {
+      "id": "metric_awareness",
+      "description": "Plan mentions the target metric (ROC AUC) or evaluation approach",
+      "keywords": [
+        "roc",
+        "auc",
+        "metric"
+      ],
+      "weight": 0.7,
+      "required": false
+    }
+  ],
+  "time_budget_seconds": 300.0,
+  "max_steps": 30,
+  "oracle_score": 0.8137,
+  "baseline_score": 0.7621,
+  "metadata": {
+    "dataset_source": "kaggle_titanic_train",
+    "dataset_note": "Using real Kaggle Titanic train.csv. baseline_score/oracle_score are set from compute_titanic_reference.py output.",
+    "evaluation_aspects": [
+      "missing_values",
+      "categorical_encoding",
+      "feature_engineering",
+      "model_selection",
+      "data_overview"
+    ],
+    "column_descriptions": {
+      "PassengerId": "Unique passenger ID",
+      "Pclass": "Ticket class (1=1st, 2=2nd, 3=3rd)",
+      "Name": "Passenger name",
+      "Sex": "Gender (male/female)",
+      "Age": "Age in years (has missing values)",
+      "SibSp": "Number of siblings/spouses aboard",
+      "Parch": "Number of parents/children aboard",
+      "Ticket": "Ticket number",
+      "Fare": "Passenger fare",
+      "Cabin": "Cabin number (many missing values)",
+      "Embarked": "Port of embarkation (C=Cherbourg, Q=Queenstown, S=Southampton)"
+    },
+    "evaluation_mode": "iid_tabular_holdout",
+    "time_series_task": false
+  },
+  "stage_limits": {
+    "PLAN": {
+      "max_steps": 3,
+      "max_seconds": 45.0,
+      "max_consecutive_steps": 2
+    },
+    "EDA": {
+      "max_steps": 5,
+      "max_seconds": 90.0,
+      "max_consecutive_steps": 3
+    },
+    "FEATURE_ENGINEERING": {
+      "max_steps": 6,
+      "max_seconds": 120.0,
+      "max_consecutive_steps": 3
+    },
+    "MODEL": {
+      "max_steps": 6,
+      "max_seconds": 180.0,
+      "max_consecutive_steps": 3
+    },
+    "VALIDATE": {
+      "max_steps": 5,
+      "max_seconds": 60.0,
+      "max_consecutive_steps": 2
+    },
+    "CODE": {
+      "max_steps": 6,
+      "max_seconds": 150.0,
+      "max_consecutive_steps": 3
+    },
+    "CODE_FIX": {
+      "max_steps": 5,
+      "max_seconds": 120.0,
+      "max_consecutive_steps": 3
+    },
+    "FINAL_SUBMIT": {
+      "max_steps": 1,
+      "max_seconds": 60.0,
+      "max_consecutive_steps": 1
+    }
+  },
+  "split_strategy": {
+    "method": "random",
+    "train_size": 0.7,
+    "valid_size": 0.15,
+    "test_size": 0.15,
+    "stratify": true,
+    "drop_split_columns": true,
+    "rationale": "Fixed evaluator-owned stratified holdout for binary-classification paper experiments."
+  }
+}

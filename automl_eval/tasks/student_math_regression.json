@@ -1,0 +1,140 @@
+{
+  "task_id": "student_math_regression",
+  "dataset_path": "data/student-mat.csv",
+  "target_column": "G3",
+  "task_type": "regression",
+  "metric": "r2",
+  "description": "Predict the final math grade (G3, range 0–20) for secondary school students based on demographic, social, and school-related attributes. Regression task. Target: G3 (final grade). Dataset has 395 rows, 16 numeric and 17 categorical features. G1 and G2 (first/second period grades) are highly predictive of G3. No missing values.",
+  "plan_checklist": [
+    {
+      "id": "encode_categorical",
+      "description": "Plan mentions encoding categorical features (17 categorical columns)",
+      "keywords": [
+        "encod",
+        "one-hot",
+        "onehot",
+        "label_encod",
+        "dummy",
+        "categorical",
+        "get_dummies"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "feature_engineering",
+      "description": "Plan mentions feature engineering or feature selection",
+      "keywords": [
+        "feature",
+        "select",
+        "correlat",
+        "new column",
+        "transform",
+        "interact",
+        "G1",
+        "G2"
+      ],
+      "weight": 1.0,
+      "required": false
+    },
+    {
+      "id": "model_selection",
+      "description": "Plan mentions specific regression model(s)",
+      "keywords": [
+        "random forest",
+        "gradient boost",
+        "xgboost",
+        "lightgbm",
+        "ridge",
+        "lasso",
+        "linear"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "metric_awareness",
+      "description": "Plan mentions the target metric (R²) or evaluation approach",
+      "keywords": [
+        "r2",
+        "r-squared",
+        "r_squared",
+        "metric",
+        "evaluat",
+        "mse",
+        "rmse"
+      ],
+      "weight": 0.7,
+      "required": false
+    },
+    {
+      "id": "scaling",
+      "description": "Plan mentions scaling/normalization",
+      "keywords": [
+        "scale",
+        "scaler",
+        "normalize",
+        "standardize"
+      ],
+      "weight": 0.5,
+      "required": false
+    }
+  ],
+  "time_budget_seconds": 300.0,
+  "max_steps": 30,
+  "oracle_score": 0.828,
+  "baseline_score": 0.6039,
+  "metadata": {
+    "dataset_source": "uci_student_performance",
+    "dataset_note": "G1 and G2 (period 1/2 grades) are strongly correlated with G3. Baseline uses DecisionTree(depth=1), oracle uses RandomForest.",
+    "evaluation_aspects": [
+      "categorical_encoding",
+      "feature_engineering",
+      "model_selection"
+    ],
+    "evaluation_mode": "iid_tabular_holdout",
+    "time_series_task": false
+  },
+  "stage_limits": {
+    "PLAN": {
+      "max_steps": 3,
+      "max_seconds": 45.0,
+      "max_consecutive_steps": 2
+    },
+    "EDA": {
+      "max_steps": 5,
+      "max_seconds": 90.0,
+      "max_consecutive_steps": 3
+    },
+    "FEATURE_ENGINEERING": {
+      "max_steps": 6,
+      "max_seconds": 120.0,
+      "max_consecutive_steps": 3
+    },
+    "MODEL": {
+      "max_steps": 6,
+      "max_seconds": 180.0,
+      "max_consecutive_steps": 3
+    },
+    "VALIDATE": {
+      "max_steps": 5,
+      "max_seconds": 60.0,
+      "max_consecutive_steps": 2
+    },
+    "CODE": {
+      "max_steps": 6,
+      "max_seconds": 150.0,
+      "max_consecutive_steps": 3
+    },
+    "CODE_FIX": {
+      "max_steps": 5,
+      "max_seconds": 120.0,
+      "max_consecutive_steps": 3
+    },
+    "FINAL_SUBMIT": {
+      "max_steps": 1,
+      "max_seconds": 60.0,
+      "max_consecutive_steps": 1
+    }
+  }
+}

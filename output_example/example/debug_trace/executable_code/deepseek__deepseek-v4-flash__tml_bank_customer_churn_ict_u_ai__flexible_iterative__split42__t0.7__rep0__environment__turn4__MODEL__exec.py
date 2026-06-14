@@ -1,0 +1,56 @@
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.impute import SimpleImputer
+from sklearn.ensemble import RandomForestClassifier
+import numpy as np
+import pandas as pd
+
+# Identify column types
+target_column = 'Exited'
+categorical_cols = ['Geography', 'Gender']
+id_cols = ['CustomerId', 'Surname']
+# All other columns are numeric features (excluding target and id)
+drop_cols = id_cols
+numerical_cols = [col for col in train_df.columns 
+                  if col not in categorical_cols + drop_cols + [target_column]]
+# Ensure only numeric dtypes remain for numerical_cols
+numerical_cols = [col for col in numerical_cols 
+                  if train_df[col].dtype in (np.int64, np.float64)]
+
+# Preprocessing: OneHotEncode categoricals, impute/scale numerics, drop ids
+preprocessor = ColumnTransformer([
+    ('num', Pipeline([
+        ('imputer', SimpleImputer(strategy='median')),
+        ('scaler', StandardScaler())
+    ]), numerical_cols),
+    ('cat', Pipeline([
+        ('imputer', SimpleImputer(strategy='most_frequent')),
+        ('encoder', OneHotEncoder(drop='first', handle_unknown='ignore', sparse_output=False))
+    ]), categorical_cols),
+    ('drop', 'drop', drop_cols)
+])
+
+# Full pipeline with RandomForestClassifier
+pipeline = Pipeline([
+    ('preprocessor', preprocessor),
+    ('classifier', RandomForestClassifier(
+        n_estimators=300,
+        max_depth=10,
+        min_samples_leaf=5,
+        class_weight='balanced',
+        random_state=42,
+        n_jobs=-1
+    ))
+])
+
+# Separate features and target
+X_train = train_df.drop(columns=[target_column])
+y_train = train_df[target_column]
+
+# Fit pipeline
+pipeline.fit(X_train, y_train)
+
+print("RandomForest pipeline created and fitted.")
+print(f"Training set size: {X_train.shape}")
+print(f"Classes in training: {np.bincount(y_train)}")

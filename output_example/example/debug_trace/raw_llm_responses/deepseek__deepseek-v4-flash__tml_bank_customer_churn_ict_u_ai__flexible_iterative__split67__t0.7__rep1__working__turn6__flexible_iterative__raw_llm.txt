@@ -1,0 +1,52 @@
+ACTION: FEATURE_ENGINEERING
+
+```python
+import pandas as pd
+import numpy as np
+
+# We'll define a reusable preprocessing function that can be included in the pipeline.
+# Based on EDA: drop CustomerId and Surname (high-cardinality identifiers),
+# one-hot encode Geography and Gender, add simple derived features.
+
+def engineer_features(df):
+    """Apply feature engineering to raw input dataframe.
+    Returns a DataFrame with features suitable for model input."""
+    X = df.copy()
+    
+    # Drop identifier columns
+    X = X.drop(columns=['CustomerId', 'Surname'], errors='ignore')
+    
+    # One-hot encode categoricals
+    X = pd.get_dummies(X, columns=['Geography', 'Gender'], drop_first=True)
+    
+    # Ensure all expected columns exist (for consistency across train/valid)
+    expected_cats = ['Geography_Germany', 'Geography_Spain', 'Gender_Male']
+    for col in expected_cats:
+        if col not in X.columns:
+            X[col] = 0
+    
+    # Add interaction: Age * IsActiveMember (older + inactive may churn more)
+    if 'Age' in X.columns and 'IsActiveMember' in X.columns:
+        X['Age_IsActive'] = X['Age'] * X['IsActiveMember']
+    
+    # Add balance-to-salary ratio (low salary but high balance may indicate saving)
+    if 'Balance' in X.columns and 'EstimatedSalary' in X.columns:
+        X['Balance_to_Salary'] = X['Balance'] / (X['EstimatedSalary'] + 1)
+        X['Balance_to_Salary'] = X['Balance_to_Salary'].clip(0, 10)
+    
+    # Add tenure * age interaction
+    if 'Tenure' in X.columns and 'Age' in X.columns:
+        X['Tenure_Age'] = X['Tenure'] * X['Age']
+    
+    # Bin Age into categories
+    if 'Age' in X.columns:
+        X['Age_bin'] = pd.cut(X['Age'], bins=[0, 30, 40, 50, 60, 100], labels=False)
+    
+    return X
+
+# Verify on training data
+X_feat = engineer_features(train_df_original.drop(columns=[target_column]))
+print("Feature columns:", list(X_feat.columns))
+print("Shape:", X_feat.shape)
+print("Any NaN:", X_feat.isna().any().any())
+```

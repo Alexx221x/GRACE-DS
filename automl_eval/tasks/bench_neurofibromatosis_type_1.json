@@ -1,0 +1,128 @@
+{
+  "task_id": "bench_neurofibromatosis_type_1",
+  "dataset_path": "data/bench_datasets/neurofibromatosis_type_1.csv",
+  "target_column": "Case Type",
+  "task_type": "binary_classification",
+  "metric": "roc_auc",
+  "description": "Predict Neurofibromatosis Type 1 case type from patient-level demographic and clinical symptom attributes. Binary target Case Type is encoded as 0 = sporadic case and 1 = familial case. Profile: 296 rows, 18 features, numeric-coded binary clinical signs plus three age fields, missing values in Age of Mother (35), Age of Father (34), and Age at First Diagnosis (4), target distribution 161 sporadic / 135 familial.",
+  "plan_checklist": [
+    {
+      "id": "inspect_schema_and_target",
+      "description": "Plan includes inspecting schema, feature types, target distribution, and basic data quality before modeling.",
+      "keywords": [
+        "schema",
+        "columns",
+        "types",
+        "target",
+        "distribution",
+        "overview",
+        "describe",
+        "eda"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "check_missing_values",
+      "description": "Plan includes checking and handling missing values if present.",
+      "keywords": [
+        "missing",
+        "null",
+        "nan",
+        "imput",
+        "fillna",
+        "dropna"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "respect_encoded_features",
+      "description": "Plan recognizes numeric-coded binary clinical features and age fields instead of treating all columns as arbitrary continuous variables.",
+      "keywords": [
+        "encoded",
+        "binary",
+        "categorical",
+        "indicator",
+        "coded",
+        "age"
+      ],
+      "weight": 0.8,
+      "required": true
+    },
+    {
+      "id": "handle_small_clinical_dataset",
+      "description": "Plan accounts for the small clinical dataset with a simple or regularized model and careful validation.",
+      "keywords": [
+        "small",
+        "clinical",
+        "simple",
+        "regular",
+        "baseline",
+        "overfit",
+        "stratified",
+        "cross-val"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "handle_class_balance",
+      "description": "Plan includes checking class balance and using a stratified or class-aware validation strategy when needed.",
+      "keywords": [
+        "imbalance",
+        "class balance",
+        "stratified",
+        "class weight",
+        "minority",
+        "rare class"
+      ],
+      "weight": 0.8,
+      "required": true
+    },
+    {
+      "id": "metric_aware_validation",
+      "description": "Plan uses ROC AUC and an appropriate validation split or cross-validation.",
+      "keywords": [
+        "roc",
+        "auc",
+        "probability",
+        "metric",
+        "validation",
+        "cross-val",
+        "cv",
+        "kfold",
+        "stratified"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "choose_suitable_tabular_model",
+      "description": "Plan chooses model families suitable for a small tabular binary clinical dataset.",
+      "keywords": [
+        "logistic",
+        "random forest",
+        "gradient boost",
+        "histgradient",
+        "xgboost",
+        "lightgbm",
+        "catboost",
+        "tree",
+        "regular",
+        "simple",
+        "overfit"
+      ],
+      "weight": 0.9,
+      "required": true
+    }
+  ],
+  "time_budget_seconds": 300.0,
+  "max_steps": 30,
+  "metadata": {
+    "dataset_source": "UCI Neurofibromatosis Type 1 dataset-uci.xlsx",
+    "source_url": "https://archive.ics.uci.edu/dataset/1162/neurofibromatosis+type+1+clinical+symptoms+of+familial+and+sporadic+cases",
+    "bench_preprocessing": "Converted the Dataset sheet from dataset-uci.xlsx to CSV, dropped the blank row-number/id column, normalized Cafe au lait column spelling to ASCII, and kept Case Type as the binary target.",
+    "class_labels": "Case Type: 0 = sporadic case, 1 = familial case. Tumour Case and clinical sign columns: 0 = absent/without, 1 = present/with."
+  }
+}

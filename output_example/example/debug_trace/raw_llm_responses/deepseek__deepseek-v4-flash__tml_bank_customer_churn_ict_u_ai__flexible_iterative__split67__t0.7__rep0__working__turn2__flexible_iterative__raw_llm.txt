@@ -1,0 +1,35 @@
+ACTION: EDA
+
+Examine the training data to understand class distribution, feature types, and potential issues before building baseline model.
+
+```python
+import pandas as pd
+import numpy as np
+
+# Basic info about the training data
+print("Training data shape:", train_df.shape)
+print("\nTarget distribution:")
+print(train_df['Exited'].value_counts())
+print(f"Target distribution (%): {100 * train_df['Exited'].value_counts(normalize=True).round(4)}")
+
+print("\nFeature dtypes:")
+print(train_df.dtypes)
+
+print("\nSummary statistics for numeric features:")
+print(train_df.describe())
+
+print("\nUnique value counts for categorical/ID columns:")
+for col in ['CustomerId', 'Surname', 'Geography', 'Gender']:
+    print(f"{col}: {train_df[col].nunique()} unique values")
+
+print("\nMissing values per column:")
+print(train_df.isnull().sum())
+
+# Check for potential target leakage / duplicates
+print(f"\nDuplicated rows: {train_df.duplicated().sum()}")
+
+# Correlation with target for numeric features
+print("\nCorrelation with target (Exited):")
+numeric_cols = train_df.select_dtypes(include=[np.number]).columns.drop('Exited')
+print(train_df[numeric_cols].corrwith(train_df['Exited']).sort_values(ascending=False))
+```

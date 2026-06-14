@@ -1,0 +1,97 @@
+{
+  "task_id": "bench_gallstone",
+  "dataset_path": "data/bench_datasets/gallstone.csv",
+  "target_column": "Gallstone Status",
+  "task_type": "binary_classification",
+  "metric": "roc_auc",
+  "description": "Predict gallstone disease status from demographic, bioimpedance, and laboratory features. Binary target Gallstone Status follows the source encoding: 0 = present and 1 = absent. Profile: 319 rows, 38 features, no observed missing values, balanced target (161 / 158), mixed binary/encoded medical indicators and continuous lab/body-composition measurements.",
+  "plan_checklist": [
+    {
+      "id": "inspect_schema_and_target",
+      "description": "Plan includes inspecting schema, feature types, target distribution, and small-sample data quality before modeling.",
+      "keywords": [
+        "schema",
+        "columns",
+        "types",
+        "target",
+        "distribution",
+        "overview",
+        "describe",
+        "eda"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "check_missing_values",
+      "description": "Plan includes checking and handling missing values if present.",
+      "keywords": [
+        "missing",
+        "null",
+        "nan",
+        "imput",
+        "fillna",
+        "dropna"
+      ],
+      "weight": 0.8,
+      "required": true
+    },
+    {
+      "id": "respect_encoded_features",
+      "description": "Plan recognizes binary/encoded medical indicators alongside continuous lab/body-composition variables.",
+      "keywords": [
+        "encoded",
+        "ordinal",
+        "binary",
+        "categorical",
+        "indicator",
+        "coded"
+      ],
+      "weight": 0.8,
+      "required": true
+    },
+    {
+      "id": "metric_aware_validation",
+      "description": "Plan uses the task metric and an appropriate validation split or cross-validation.",
+      "keywords": [
+        "roc",
+        "auc",
+        "probability",
+        "metric",
+        "validation",
+        "cross-val",
+        "cv",
+        "kfold",
+        "stratified"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "choose_suitable_tabular_model",
+      "description": "Plan chooses model families suitable for the dataset size and tabular feature mix.",
+      "keywords": [
+        "logistic",
+        "random forest",
+        "gradient boost",
+        "histgradient",
+        "xgboost",
+        "lightgbm",
+        "catboost",
+        "tree",
+        "regular",
+        "simple",
+        "overfit"
+      ],
+      "weight": 0.9,
+      "required": true
+    }
+  ],
+  "time_budget_seconds": 300.0,
+  "max_steps": 30,
+  "metadata": {
+    "dataset_source": "UCI Gallstone",
+    "source_url": "https://archive.ics.uci.edu/dataset/1150/gallstone-1",
+    "bench_preprocessing": "Converted the source XLSX file to CSV for the current pd.read_csv based environment."
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "task_id": "tml_foot_traffic_wuerzburg_retail_forecasting_2_0",
+  "dataset_path": "data/tml_bench/foot_traffic_wuerzburg_retail_forecasting_2_0.csv",
+  "target_column": "target",
+  "task_type": "regression",
+  "metric": "rmse",
+  "description": "TML-bench Kaggle competition 'foot-traffic-wuerzburg-retail-forecasting-2-0'. Strict tabular task with a deterministic public/private-holdout split reproduced as a predefined GRACE split.",
+  "plan_checklist": [],
+  "time_budget_seconds": 1800.0,
+  "max_steps": 30,
+  "oracle_score": -0.0911,
+  "baseline_score": -0.1948,
+  "metadata": {
+    "dataset_source": "tml-bench/foot-traffic-wuerzburg-retail-forecasting-2-0",
+    "suite": "TML-bench",
+    "citation": "Pinchuk, TML-bench, 2026 (arXiv 2603.05764)",
+    "contamination_note": "Recent Kaggle competition selected for contamination control (release post-dates evaluated-model cutoffs).",
+    "time_series_task": false,
+    "evaluation_mode": "private_holdout",
+    "n_rows": 51444,
+    "n_features": 4
+  },
+  "split_strategy": {
+    "method": "predefined",
+    "split_column": "__split__",
+    "train_values": [
+      "train"
+    ],
+    "valid_values": [
+      "valid"
+    ],
+    "test_values": [
+      "test"
+    ],
+    "drop_split_columns": true,
+    "rationale": "Reproduce TML-bench private-holdout scoring via a predefined split."
+  }
+}

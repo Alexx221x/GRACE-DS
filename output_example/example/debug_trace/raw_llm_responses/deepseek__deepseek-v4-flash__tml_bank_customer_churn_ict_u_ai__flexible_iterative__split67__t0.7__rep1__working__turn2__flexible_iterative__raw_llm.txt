@@ -1,0 +1,43 @@
+ACTION: EDA
+
+```python
+# Import necessary libraries
+import pandas as pd
+import numpy as np
+
+print("=== train_df info ===")
+print(train_df.info())
+print("\n=== train_df head ===")
+print(train_df.head())
+print("\n=== target distribution ===")
+print(train_df['Exited'].value_counts())
+print(train_df['Exited'].value_counts(normalize=True))
+print("\n=== numeric describe ===")
+print(train_df.describe())
+print("\n=== categorical columns ===")
+cat_cols = train_df.select_dtypes(include='object').columns.tolist()
+print(cat_cols)
+for col in cat_cols:
+    print(f"\n{col}: {train_df[col].nunique()} unique values")
+    print(train_df[col].value_counts())
+
+print("\n=== correlation with target (numeric) ===")
+num_cols = train_df.select_dtypes(include=[np.number]).columns.tolist()
+num_cols.remove('Exited')
+print(train_df[num_cols].corrwith(train_df['Exited']).sort_values(ascending=False))
+
+print("\n=== identifiers/high cardinality ===")
+print(f"CustomerId unique: {train_df['CustomerId'].nunique()}")
+print(f"Surname unique: {train_df['Surname'].nunique()}")
+
+# Check for duplicates
+print(f"\nDuplicate rows: {train_df.duplicated().sum()}")
+# Check for any nulls
+print(f"Total nulls: {train_df.isnull().sum().sum()}")
+
+# Check split column
+if '__split__' in train_df.columns:
+    print(f"\n__split__ values: {train_df['__split__'].value_counts()}")
+else:
+    print("\nNo __split__ column in train_df")
+```

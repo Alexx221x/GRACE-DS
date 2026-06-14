@@ -1,0 +1,123 @@
+{
+  "task_id": "bench_tunadromd",
+  "dataset_path": "data/bench_datasets/tunadromd.csv",
+  "target_column": "Label",
+  "task_type": "binary_classification",
+  "metric": "roc_auc",
+  "description": "Predict Android malware vs goodware from permission and API-call binary features in TUNADROMD. Binary target Label is numeric in the source data. Profile: 4464 rows, 241 sparse binary permission/API indicators, no observed missing values, 42 constant-zero features, imbalanced target (3565 / 899).",
+  "plan_checklist": [
+    {
+      "id": "inspect_schema_and_target",
+      "description": "Plan includes inspecting schema, feature types, target distribution, and basic data quality before modeling.",
+      "keywords": [
+        "schema",
+        "columns",
+        "types",
+        "target",
+        "distribution",
+        "overview",
+        "describe",
+        "eda"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "check_missing_values",
+      "description": "Plan includes checking and handling missing values if present.",
+      "keywords": [
+        "missing",
+        "null",
+        "nan",
+        "imput",
+        "fillna",
+        "dropna"
+      ],
+      "weight": 0.8,
+      "required": true
+    },
+    {
+      "id": "respect_encoded_features",
+      "description": "Plan recognizes numeric-coded categorical/ordinal/binary features and avoids treating all columns as arbitrary continuous variables.",
+      "keywords": [
+        "encoded",
+        "ordinal",
+        "binary",
+        "categorical",
+        "indicator",
+        "coded"
+      ],
+      "weight": 0.8,
+      "required": false
+    },
+    {
+      "id": "handle_class_imbalance",
+      "description": "Plan includes checking class balance and using an imbalance-aware validation/modeling strategy when needed.",
+      "keywords": [
+        "imbalance",
+        "class balance",
+        "stratified",
+        "class weight",
+        "minority",
+        "rare class"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "check_constant_low_variance",
+      "description": "Plan includes checking constant or low-variance features and dropping/ignoring them when useful.",
+      "keywords": [
+        "constant",
+        "low variance",
+        "variance",
+        "drop",
+        "feature selection"
+      ],
+      "weight": 0.7,
+      "required": false
+    },
+    {
+      "id": "metric_aware_validation",
+      "description": "Plan uses the task metric and an appropriate validation split or cross-validation.",
+      "keywords": [
+        "roc",
+        "auc",
+        "probability",
+        "metric",
+        "validation",
+        "cross-val",
+        "cv",
+        "kfold",
+        "stratified"
+      ],
+      "weight": 1.0,
+      "required": true
+    },
+    {
+      "id": "choose_suitable_tabular_model",
+      "description": "Plan chooses model families suitable for the dataset size and tabular feature mix.",
+      "keywords": [
+        "logistic",
+        "random forest",
+        "gradient boost",
+        "histgradient",
+        "xgboost",
+        "lightgbm",
+        "catboost",
+        "tree",
+        "sparse",
+        "regular"
+      ],
+      "weight": 0.9,
+      "required": true
+    }
+  ],
+  "time_budget_seconds": 300.0,
+  "max_steps": 30,
+  "metadata": {
+    "dataset_source": "UCI TUNADROMD",
+    "source_url": "https://archive.ics.uci.edu/dataset/813/tunadromd",
+    "bench_preprocessing": "Dropped one row with an empty target value and kept the source numeric Label target."
+  }
+}

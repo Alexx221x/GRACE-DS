@@ -1,0 +1,3 @@
+ACTION: PLAN
+
+Strategy: Create a replayable baseline pipeline immediately (LogisticRegression with fixed random seed) before deeper EDA, then after validation, explore data to inform a second different model family (RandomForestClassifier). Preprocessing: drop identifier columns (CustomerId, Surname), one-hot encode Geography and Gender, standard scale numeric features, no missing imputation needed (0 missing). Use fixed hyperparameters, no search. Evaluate via VALIDATE, then iterate on feature engineering and model choice based on validation feedback. Reserve at least two validated candidates from distinct families before stopping.
