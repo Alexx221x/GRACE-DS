@@ -77,6 +77,10 @@ bash scripts/run_experiments.sh --config configs/final.yaml --tasks tml_playgrou
 bash scripts/run_experiments.sh --config configs/final.yaml --models openai/gpt-5.4
 ```
 
+## Output Example
+
+See `output_example/` for an example experiment output. You can inspect it to understand the generated run artifacts and result structure.
+
 ## Regimes
 
 The current paper config in [configs/final.yaml](configs/final.yaml) includes these regimes:
