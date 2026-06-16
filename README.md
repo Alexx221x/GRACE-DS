@@ -51,6 +51,10 @@ The installer will:
 - materialize GRACE task files into `automl_eval/tasks/`
 - build the synthetic tasks used by the benchmark
 
+## Extending the Benchmark Suite
+
+GRACE-DS supports adding new tabular ML problems as reproducible benchmark tasks. Each task records the dataset, target, metric, provenance metadata, and evaluator-owned split protocol used for evaluation. To add a new task, see [automl_eval/tasks/README.md](automl_eval/tasks/README.md).
+
 ## Experiment Requirements
 
 To run real LLM experiments, you need one of the following:
