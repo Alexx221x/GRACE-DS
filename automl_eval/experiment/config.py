@@ -6,6 +6,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from automl_eval.llm.prompt_paraphrase import PROMPT_VARIANT_IDS
+
 ALL_REGIMES: tuple[str, ...] = (
     # --- core regime comparison (structure vs free-form iteration) ---
     "single_shot",
@@ -115,6 +117,10 @@ class ExperimentConfig:
     auto_finalize_on_exhaustion: bool = True
 
     paraphrase_prompts: bool = False
+    # Explicit experimental axis. It is ignored when paraphrase_prompts=False.
+    prompt_variants: list[int] = field(
+        default_factory=lambda: list(PROMPT_VARIANT_IDS)
+    )
     performance_normalization: bool = False
 
     # --- routing ---
@@ -160,6 +166,25 @@ class ExperimentConfig:
             raise ValueError("temperature_schedule is empty.")
         if self.repeats_per_condition < 1:
             raise ValueError("repeats_per_condition must be >= 1.")
+        if not isinstance(self.prompt_variants, list) or not self.prompt_variants:
+            raise ValueError("prompt_variants must be a non-empty list.")
+        if any(
+            isinstance(variant_id, bool) or not isinstance(variant_id, int)
+            for variant_id in self.prompt_variants
+        ):
+            raise ValueError("Every prompt_variants entry must be an integer.")
+        if len(set(self.prompt_variants)) != len(self.prompt_variants):
+            raise ValueError("prompt_variants must not contain duplicates.")
+        unknown_prompt_variants = [
+            variant_id
+            for variant_id in self.prompt_variants
+            if variant_id not in PROMPT_VARIANT_IDS
+        ]
+        if unknown_prompt_variants:
+            raise ValueError(
+                f"Unknown prompt variants {unknown_prompt_variants}. "
+                f"Valid ids: {list(PROMPT_VARIANT_IDS)}"
+            )
         if not isinstance(self.dataset_subsample_factor, int) or isinstance(
             self.dataset_subsample_factor, bool
         ):
@@ -193,21 +218,32 @@ class ExperimentConfig:
             "debug_trace_enabled",
             "log_executable_code",
             "log_raw_llm_responses",
+            "paraphrase_prompts",
+            "performance_normalization",
         ):
             if not isinstance(getattr(self, name), bool):
                 raise ValueError(f"{name} must be a boolean.")
 
+    def active_prompt_variants(self) -> list[int]:
+        """Return the prompt variants that expand into episode units."""
+        return list(self.prompt_variants) if self.paraphrase_prompts else [0]
+
     def episodes_per_cell(self) -> int:
-        """Episodes per (model, task, regime) = splits * temps * repeats."""
+        """Episodes per cell = splits * temperatures * repeats * prompt variants."""
         return (
             len(self.split_seeds)
             * len(self.temperature_schedule)
             * self.repeats_per_condition
+            * len(self.active_prompt_variants())
         )
 
     def replications_per_temperature(self) -> int:
         """Paired observations available per (model, task, regime, temperature)."""
-        return len(self.split_seeds) * self.repeats_per_condition
+        return (
+            len(self.split_seeds)
+            * self.repeats_per_condition
+            * len(self.active_prompt_variants())
+        )
 
     def total_episodes(self) -> int:
         return (
@@ -240,6 +276,11 @@ class ExperimentConfig:
                 f"all temperatures < 0.5 ({self.temperature_schedule}) with multiple replications: "
                 "LLM run-to-run variance will be near-degenerate, so variance-based statistics "
                 "will be uninformative. Consider adding a higher temperature."
+            )
+        if self.paraphrase_prompts and len(self.active_prompt_variants()) < 2:
+            warnings.append(
+                "paraphrase_prompts is enabled but fewer than two prompt variants "
+                "are configured; prompt-robustness variation cannot be estimated."
             )
         return warnings
 

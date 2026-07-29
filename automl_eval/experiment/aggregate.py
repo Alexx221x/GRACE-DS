@@ -341,6 +341,14 @@ def _df_from_episodes(episodes: list[dict[str, Any]]) -> pd.DataFrame:
             "repeat_index": ep.get("repeat_index"),
             "split_seed": ep.get("split_seed"),
             "temperature": ep.get("temperature"),
+            "prompt_paraphrase_enabled": ep.get(
+                "prompt_paraphrase_enabled",
+                payload.get("prompt_paraphrase_enabled", False),
+            ),
+            "prompt_variant_id": ep.get(
+                "prompt_variant_id", payload.get("prompt_variant_id", 0)
+            ),
+            "system_prompt_sha256": payload.get("system_prompt_sha256"),
             "ok": ep.get("ok", False),
             # Raw = any hidden-test score the environment produced. Main/final =
             "raw_final_hidden_test_metric": raw_hidden,
@@ -603,6 +611,54 @@ def _agg_main(df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
+def _agg_prompt_robustness(df: pd.DataFrame) -> pd.DataFrame:
+    """Summarize performance separately for each auditable prompt variant."""
+    rows: list[dict[str, Any]] = []
+    group_cols = [
+        "model",
+        "task_id",
+        "regime",
+        "temperature",
+        "prompt_variant_id",
+    ]
+    for keys, group in df.groupby(group_cols, dropna=False):
+        observed = group["final_hidden_test_metric"].dropna()
+        prompt_hashes = sorted(
+            {
+                str(value)
+                for value in group["system_prompt_sha256"].dropna()
+                if str(value)
+            }
+        )
+        n_episodes = int(len(group))
+        rows.append(
+            {
+                **dict(zip(group_cols, keys, strict=True)),
+                "n_episodes": n_episodes,
+                "n_observed": int(len(observed)),
+                "success_rate": (
+                    float(len(observed) / n_episodes)
+                    if n_episodes
+                    else float("nan")
+                ),
+                "protocol_valid_rate": float(
+                    group["protocol_valid"].fillna(False).astype(bool).mean()
+                ),
+                "mean_hidden_test": (
+                    float(observed.mean()) if len(observed) else float("nan")
+                ),
+                "std_hidden_test": (
+                    float(observed.std(ddof=1))
+                    if len(observed) > 1
+                    else float("nan")
+                ),
+                "system_prompt_sha256": "|".join(prompt_hashes),
+                "n_distinct_system_prompts": len(prompt_hashes),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 def _agg_decomposition(df: pd.DataFrame) -> pd.DataFrame:
     cols = {f"final_{f}": "mean" for f in _COMPONENT_FIELDS}
     out = (
@@ -812,20 +868,22 @@ def _agg_significance(
         have_scipy = False
 
     rows = []
-    # Pair within the same (model, task, temperature); the pairing key across
+    # Pair within the same (model, task, temperature). Prompt variant is an
+    # explicit factor, so it must be part of the cross-regime pairing key.
     for (model, task, temperature), g in df.groupby(
         ["model", "task_id", "temperature"]
     ):
         ref = g[g["regime"] == reference]
         if ref.empty:
             continue
-        ref_metric = ref.set_index(["split_seed", "repeat_index"])[
+        pair_keys = ["split_seed", "repeat_index", "prompt_variant_id"]
+        ref_metric = ref.set_index(pair_keys)[
             "final_hidden_test_metric"
         ]
         for regime, gr in g.groupby("regime"):
             if regime == reference:
                 continue
-            cur = gr.set_index(["split_seed", "repeat_index"])[
+            cur = gr.set_index(pair_keys)[
                 "final_hidden_test_metric"
             ]
             common = ref_metric.index.intersection(cur.index)
@@ -1401,6 +1459,7 @@ def aggregate_run(raw_path: str | Path, out_dir: str | Path) -> dict[str, Path]:
             "table_reward_metric_correlation.csv",
             "table_reward_signal_diagnostics.csv",
             "table_significance.csv",
+            "table_prompt_robustness.csv",
         ):
             _write(name, pd.DataFrame())
         return written
@@ -1419,6 +1478,7 @@ def aggregate_run(raw_path: str | Path, out_dir: str | Path) -> dict[str, Path]:
     _write("table_reward_metric_correlation.csv", _agg_reward_metric_correlation(df))
     _write("table_reward_signal_diagnostics.csv", _agg_reward_signal_diagnostics(df))
     _write("table_significance.csv", _agg_significance(df))
+    _write("table_prompt_robustness.csv", _agg_prompt_robustness(df))
 
     # Also dump the per-episode flat table for ad-hoc analysis.
     _write("episodes_flat.csv", df)

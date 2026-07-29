@@ -89,6 +89,11 @@ from urllib import request as urlrequest
 from automl_eval.core.action_parser import ActionParser
 from automl_eval.core.environment import AutoMLEnvironment
 from automl_eval.llm.prompts import MODEL_SEARCH_POLICY, build_system_prompt
+from automl_eval.llm.prompt_paraphrase import (
+    apply_prompt_variant,
+    prompt_sha256,
+    validate_prompt_variant_id,
+)
 from automl_eval.evaluation.candidate_diversity import (
     candidate_diversity_feedback,
     candidate_diversity_score,
@@ -201,6 +206,16 @@ N_RESTARTS_CALL_MATCHED_UPPER_BOUND = WORKING_LLM_CALL_BUDGET
 WORKING_CODE_EXECUTION_BUDGET_CAP = WORKING_LLM_CALL_BUDGET
 MAX_VALIDATION_REQUESTS_PER_EPISODE = PRIMARY_VALIDATED_CANDIDATE_BUDGET
 UNSTRUCTURED_FEEDBACK_POLICY = "execution_output_and_scalar_validation_only"
+PARAPHRASE_PROMPTS = os.getenv("GRACE_PARAPHRASE_PROMPTS", "0").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
+PROMPT_VARIANT_ID = int(os.getenv("GRACE_PROMPT_VARIANT_ID", "0"))
+if PARAPHRASE_PROMPTS:
+    validate_prompt_variant_id(PROMPT_VARIANT_ID)
+ACTIVE_SYSTEM_PROMPT_SHA256: str | None = None
 SUPPRESS_FORCED_HIDDEN_TEST_DURING_WORKING = (
     os.getenv("GRACE_SUPPRESS_FORCED_HIDDEN_TEST", "0") == "1"
 )
@@ -837,7 +852,7 @@ RED_TEAM_VS_VALIDATORS_PROMPT = (
 )
 
 
-def mode_system_prompt(mode: StudyMode, working_calls: int) -> str:
+def _canonical_mode_system_prompt(mode: StudyMode, working_calls: int) -> str:
     if mode in {
         StudyMode.SINGLE_SHOT,
         StudyMode.RESTARTS,
@@ -948,6 +963,16 @@ def mode_system_prompt(mode: StudyMode, working_calls: int) -> str:
     return (
         base
         + "\n## Flexible candidate-first regime\nChoose productive non-terminal actions, but use a candidate-first discipline. Start with PLAN -> MODEL -> EDA -> FEATURE_ENGINEERING when feasible: your PLAN must explicitly say that the next action will create a simple replayable baseline MODEL before deeper EDA, and it must name a second different manual model family to try later. Do not write a PLAN that jumps straight to EDA or omits MODEL. A successful replayable candidate is automatically validated. STOP_WORKING is only accepted once you have enough evidence: normally at least three validated candidates and at least two distinct model families, unless the working budget is exhausted. If feedback says a stage checklist is closed, treat it as permission to improve diversity, not as a stopping recommendation."
+    )
+
+
+def mode_system_prompt(mode: StudyMode, working_calls: int) -> str:
+    """Return the exact configured prompt for a regime and action budget."""
+    canonical = _canonical_mode_system_prompt(mode, working_calls)
+    return apply_prompt_variant(
+        canonical,
+        variant_id=PROMPT_VARIANT_ID,
+        enabled=PARAPHRASE_PROMPTS,
     )
 
 
@@ -1627,6 +1652,16 @@ def ask_llm(
     turn: int,
     trial: int | None = None,
 ) -> tuple[str, int | None, int | None]:
+    global ACTIVE_SYSTEM_PROMPT_SHA256
+
+    system_prompt = "\n\n".join(
+        message.get("content", "")
+        for message in messages
+        if message.get("role") == "system"
+    )
+    system_prompt_digest = prompt_sha256(system_prompt) if system_prompt else None
+    if system_prompt_digest is not None:
+        ACTIVE_SYSTEM_PROMPT_SHA256 = system_prompt_digest
     context = {
         "mode": mode.value,
         "phase": phase,
@@ -1634,6 +1669,9 @@ def ask_llm(
         "trial": trial,
         "task_id": ACTIVE_TASK_ID,
         "dataset_seed": ACTIVE_DATASET_SEED,
+        "prompt_paraphrase_enabled": PARAPHRASE_PROMPTS,
+        "prompt_variant_id": PROMPT_VARIANT_ID,
+        "system_prompt_sha256": system_prompt_digest,
     }
     response = llm.invoke(messages, context=context)
     text = response.content or ""
@@ -3698,4 +3736,7 @@ def _modal_result_to_dict(result, regime_name, llm):
     payload["_task_id"] = ACTIVE_TASK_ID
     payload["_dataset_seed"] = ACTIVE_DATASET_SEED
     payload["_model"] = LLM_MODEL
+    payload["prompt_paraphrase_enabled"] = PARAPHRASE_PROMPTS
+    payload["prompt_variant_id"] = PROMPT_VARIANT_ID
+    payload["system_prompt_sha256"] = ACTIVE_SYSTEM_PROMPT_SHA256
     return payload

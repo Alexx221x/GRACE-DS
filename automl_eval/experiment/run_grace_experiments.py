@@ -74,6 +74,14 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Enable prompt paraphrasing (LLF-Bench-style).",
     )
     p.add_argument(
+        "--prompt-variants",
+        default=None,
+        help=(
+            "Comma-separated prompt variant ids to cross with every sampling "
+            "repeat (overrides config and enables paraphrasing; valid ids: 0,1,2,3)."
+        ),
+    )
+    p.add_argument(
         "--normalize",
         action="store_true",
         help="Enable FeatEng-style performance normalization.",
@@ -157,6 +165,13 @@ def main(argv: list[str] | None = None) -> int:
     if args.run_name:
         config.run_name = args.run_name
     if args.paraphrase:
+        config.paraphrase_prompts = True
+    if args.prompt_variants:
+        config.prompt_variants = [
+            int(item.strip())
+            for item in args.prompt_variants.split(",")
+            if item.strip()
+        ]
         config.paraphrase_prompts = True
     if args.normalize:
         config.performance_normalization = True

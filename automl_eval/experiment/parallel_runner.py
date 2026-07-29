@@ -30,6 +30,7 @@ class EpisodeUnit:
     max_tokens: int
     total_token_budget: int
     paraphrase_prompts: bool
+    prompt_variant_id: int
     performance_normalization: bool
     auto_finalize_on_exhaustion: bool
     llm_url: str
@@ -55,9 +56,13 @@ class EpisodeUnit:
 
     def unit_id(self) -> str:
         safe_model = self.model.replace("/", "__")
+        prompt_variant = (
+            f"::pv{self.prompt_variant_id}" if self.paraphrase_prompts else ""
+        )
         return (
             f"{safe_model}::{self.task_id}::{self.regime}"
             f"::split{self.split_seed}::t{self.temperature}::rep{self.repeat_index}"
+            f"{prompt_variant}"
         )
 
 
@@ -71,6 +76,8 @@ class EpisodeOutcome:
     split_seed: int
     temperature: float
     llm_seed: int
+    prompt_paraphrase_enabled: bool
+    prompt_variant_id: int
     ok: bool
     payload: dict[str, Any] = field(default_factory=dict)
     error: str | None = None
@@ -91,6 +98,8 @@ def _outcome_record(outcome: EpisodeOutcome) -> dict[str, Any]:
         "split_seed": outcome.split_seed,
         "temperature": outcome.temperature,
         "llm_seed": outcome.llm_seed,
+        "prompt_paraphrase_enabled": outcome.prompt_paraphrase_enabled,
+        "prompt_variant_id": outcome.prompt_variant_id,
         "ok": outcome.ok,
         "error": outcome.error,
         "elapsed_sec": round(outcome.elapsed_sec, 2),
@@ -142,6 +151,23 @@ def _load_resume_records(
             if uid:
                 by_unit[str(uid)] = rec
     return by_unit
+
+
+def _validate_resume_grid_compatibility(
+    records: dict[str, dict[str, Any]],
+    current_unit_ids: set[str],
+) -> None:
+    """Refuse to aggregate records produced by a different resolved grid."""
+    incompatible = sorted(set(records).difference(current_unit_ids))
+    if incompatible:
+        examples = ", ".join(incompatible[:3])
+        raise RuntimeError(
+            "Existing resume records do not match the current unit manifest "
+            f"({len(incompatible)} incompatible unit ids; examples: {examples}). "
+            "Use a new run_name/output directory for a changed config. This guard "
+            "prevents old canonical-prompt episodes from being mixed with prompt-"
+            "variant episodes."
+        )
 
 
 _TRANSIENT_ERROR_RE = re.compile(
@@ -244,6 +270,7 @@ def _worker(unit: EpisodeUnit) -> EpisodeOutcome:
     os.environ.setdefault("RUN_CONNECTION_PROBE", "0")
     # Scenario-B toggles are surfaced for downstream prompt selection / normalization.
     os.environ["GRACE_PARAPHRASE_PROMPTS"] = "1" if unit.paraphrase_prompts else "0"
+    os.environ["GRACE_PROMPT_VARIANT_ID"] = str(unit.prompt_variant_id)
     os.environ["GRACE_PERF_NORM"] = "1" if unit.performance_normalization else "0"
     # invert auto_finalize -> the SUPPRESS env var the
     os.environ["GRACE_SUPPRESS_FORCED_HIDDEN_TEST"] = (
@@ -292,6 +319,8 @@ def _worker(unit: EpisodeUnit) -> EpisodeOutcome:
         repeat_index=unit.repeat_index,
         temperature=unit.temperature,
         llm_seed=unit.llm_seed,
+        prompt_paraphrase_enabled=unit.paraphrase_prompts,
+        prompt_variant_id=unit.prompt_variant_id,
         request_timeout_sec=unit.request_timeout_sec,
         max_retries=unit.max_retries,
     )
@@ -345,7 +374,8 @@ def _worker(unit: EpisodeUnit) -> EpisodeOutcome:
         # Concise per-episode progress line (replaces the suppressed banner).
         sys.stdout.write(
             f"[worker] {unit.model} | {unit.task_id} | {unit.regime} | "
-            f"split={unit.split_seed} t={unit.temperature} rep={unit.repeat_index}\n"
+            f"split={unit.split_seed} t={unit.temperature} rep={unit.repeat_index} "
+            f"prompt_variant={unit.prompt_variant_id}\n"
         )
         sys.stdout.flush()
         trace_event(
@@ -362,6 +392,10 @@ def _worker(unit: EpisodeUnit) -> EpisodeOutcome:
         )
         if isinstance(payload, dict):
             payload.setdefault("debug_trace_dir", unit.trace_base_dir)
+            payload.setdefault(
+                "prompt_paraphrase_enabled", unit.paraphrase_prompts
+            )
+            payload.setdefault("prompt_variant_id", unit.prompt_variant_id)
         return EpisodeOutcome(
             unit_id=unit.unit_id(),
             model=unit.model,
@@ -371,6 +405,8 @@ def _worker(unit: EpisodeUnit) -> EpisodeOutcome:
             split_seed=unit.split_seed,
             temperature=unit.temperature,
             llm_seed=unit.llm_seed,
+            prompt_paraphrase_enabled=unit.paraphrase_prompts,
+            prompt_variant_id=unit.prompt_variant_id,
             ok=True,
             payload=payload,
             elapsed_sec=time.time() - t0,
@@ -391,6 +427,8 @@ def _worker(unit: EpisodeUnit) -> EpisodeOutcome:
             split_seed=unit.split_seed,
             temperature=unit.temperature,
             llm_seed=unit.llm_seed,
+            prompt_paraphrase_enabled=unit.paraphrase_prompts,
+            prompt_variant_id=unit.prompt_variant_id,
             ok=False,
             error=f"{type(exc).__name__}: {exc}\n{traceback.format_exc()[:1500]}",
             elapsed_sec=time.time() - t0,
@@ -398,8 +436,9 @@ def _worker(unit: EpisodeUnit) -> EpisodeOutcome:
 
 
 def build_units(config: ExperimentConfig) -> list[EpisodeUnit]:
-    """Expand the config into the full (model x task x regime x split x temp x repeat) grid."""
+    """Expand the complete grid, crossing prompt variants with sampling repeats."""
     units: list[EpisodeUnit] = []
+    prompt_variants = config.active_prompt_variants()
     for model in config.models:
         # Per-model preferences are looked up by the OpenRouter slug; missing keys
         prov_prefs = dict(config.provider_preferences.get(model) or {})
@@ -409,44 +448,49 @@ def build_units(config: ExperimentConfig) -> list[EpisodeUnit]:
                 for split_seed in config.split_seeds:
                     for temperature in config.temperature_schedule:
                         for rep in range(config.repeats_per_condition):
-                            units.append(
-                                EpisodeUnit(
-                                    model=model,
-                                    task_id=task_id,
-                                    regime=regime,
-                                    repeat_index=rep,
-                                    split_seed=split_seed,
-                                    temperature=float(temperature),
-                                    llm_seed=config.llm_seed_base + rep,
-                                    max_actions=config.max_actions,
-                                    max_tokens=config.max_tokens,
-                                    total_token_budget=config.total_token_budget,
-                                    paraphrase_prompts=config.paraphrase_prompts,
-                                    performance_normalization=config.performance_normalization,
-                                    auto_finalize_on_exhaustion=config.auto_finalize_on_exhaustion,
-                                    llm_url=config.openrouter_base_url,
-                                    api_key_env=config.api_key_env,
-                                    request_timeout_sec=config.request_timeout_sec,
-                                    max_retries=config.max_retries,
-                                    stateless_sandbox_timeout_sec=config.stateless_sandbox_timeout_sec,
-                                    stateful_sandbox_timeout_sec=config.stateful_sandbox_timeout_sec,
-                                    stateless_task_time_budget_sec=config.stateless_task_time_budget_sec,
-                                    stateful_task_time_budget_sec=config.stateful_task_time_budget_sec,
-                                    stateful_stage_time_budget_multiplier=config.stateful_stage_time_budget_multiplier,
-                                    task_dirs=config.task_dirs,
-                                    dataset_subsample_factor=config.dataset_subsample_factor,
-                                    provider_preferences=prov_prefs,
-                                    reasoning_preferences=reas_prefs,
-                                    debug_trace_enabled=config.debug_trace_enabled,
-                                    log_executable_code=config.log_executable_code,
-                                    log_raw_llm_responses=config.log_raw_llm_responses,
-                                    trace_base_dir=str(
-                                        Path(config.output_dir)
-                                        / config.run_name
-                                        / "debug_trace"
-                                    ),
+                            # Keep the LLM sampling seed fixed while crossing
+                            # wording variants. This prevents prompt wording from
+                            # being confounded with generation randomness.
+                            for prompt_variant_id in prompt_variants:
+                                units.append(
+                                    EpisodeUnit(
+                                        model=model,
+                                        task_id=task_id,
+                                        regime=regime,
+                                        repeat_index=rep,
+                                        split_seed=split_seed,
+                                        temperature=float(temperature),
+                                        llm_seed=config.llm_seed_base + rep,
+                                        max_actions=config.max_actions,
+                                        max_tokens=config.max_tokens,
+                                        total_token_budget=config.total_token_budget,
+                                        paraphrase_prompts=config.paraphrase_prompts,
+                                        prompt_variant_id=prompt_variant_id,
+                                        performance_normalization=config.performance_normalization,
+                                        auto_finalize_on_exhaustion=config.auto_finalize_on_exhaustion,
+                                        llm_url=config.openrouter_base_url,
+                                        api_key_env=config.api_key_env,
+                                        request_timeout_sec=config.request_timeout_sec,
+                                        max_retries=config.max_retries,
+                                        stateless_sandbox_timeout_sec=config.stateless_sandbox_timeout_sec,
+                                        stateful_sandbox_timeout_sec=config.stateful_sandbox_timeout_sec,
+                                        stateless_task_time_budget_sec=config.stateless_task_time_budget_sec,
+                                        stateful_task_time_budget_sec=config.stateful_task_time_budget_sec,
+                                        stateful_stage_time_budget_multiplier=config.stateful_stage_time_budget_multiplier,
+                                        task_dirs=config.task_dirs,
+                                        dataset_subsample_factor=config.dataset_subsample_factor,
+                                        provider_preferences=prov_prefs,
+                                        reasoning_preferences=reas_prefs,
+                                        debug_trace_enabled=config.debug_trace_enabled,
+                                        log_executable_code=config.log_executable_code,
+                                        log_raw_llm_responses=config.log_raw_llm_responses,
+                                        trace_base_dir=str(
+                                            Path(config.output_dir)
+                                            / config.run_name
+                                            / "debug_trace"
+                                        ),
+                                    )
                                 )
-                            )
     return units
 
 
@@ -518,6 +562,8 @@ def _dispatch_with_timeout(pool, units, episode_timeout_sec: int, num_workers: i
                     split_seed=unit.split_seed,
                     temperature=unit.temperature,
                     llm_seed=unit.llm_seed,
+                    prompt_paraphrase_enabled=unit.paraphrase_prompts,
+                    prompt_variant_id=unit.prompt_variant_id,
                     ok=False,
                     error=f"worker_exception: {type(e).__name__}: {e}"[:240],
                     elapsed_sec=elapsed,
@@ -556,6 +602,8 @@ def _dispatch_with_timeout(pool, units, episode_timeout_sec: int, num_workers: i
                 split_seed=unit.split_seed,
                 temperature=unit.temperature,
                 llm_seed=unit.llm_seed,
+                prompt_paraphrase_enabled=unit.paraphrase_prompts,
+                prompt_variant_id=unit.prompt_variant_id,
                 ok=False,
                 error=f"timeout_exceeded_{episode_timeout_sec}s",
                 elapsed_sec=elapsed,
@@ -650,6 +698,8 @@ def _dispatch_with_per_model_cap(
                 split_seed=u.split_seed,
                 temperature=u.temperature,
                 llm_seed=u.llm_seed,
+                prompt_paraphrase_enabled=u.paraphrase_prompts,
+                prompt_variant_id=u.prompt_variant_id,
                 ok=False,
                 error=f"timeout_exceeded_{episode_timeout_sec}s",
                 elapsed_sec=elapsed,
@@ -696,7 +746,9 @@ def run_experiment(
         f"[grid] {len(units)} episode units "
         f"({len(config.models)} models x {len(config.task_ids)} tasks x "
         f"{len(config.regimes)} regimes x {len(config.split_seeds)} split-seeds x "
-        f"{len(config.temperature_schedule)} temperatures x {config.repeats_per_condition} repeats)"
+        f"{len(config.temperature_schedule)} temperatures x "
+        f"{config.repeats_per_condition} repeats x "
+        f"{len(config.active_prompt_variants())} prompt variants)"
     )
     print(
         f"[grid] {config.episodes_per_cell()} episodes per (model,task,regime); "
@@ -718,11 +770,8 @@ def run_experiment(
     resume_records: dict[str, dict[str, Any]] = {}
     if resume:
         current_unit_ids = {u.unit_id() for u in units}
-        resume_records = {
-            uid: rec
-            for uid, rec in _load_resume_records(raw_path, checkpoint_dir).items()
-            if uid in current_unit_ids
-        }
+        resume_records = _load_resume_records(raw_path, checkpoint_dir)
+        _validate_resume_grid_compatibility(resume_records, current_unit_ids)
         if resume_records:
             resume_records, transient_records = _filter_resume_records_for_rerun(
                 resume_records, rerun_transient=rerun_transient
