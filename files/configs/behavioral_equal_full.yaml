@@ -1,0 +1,62 @@
+models:
+- deepseek/deepseek-v4-flash
+task_ids:
+- bench_lattice_physics
+- tml_bank_customer_churn_ict_u_ai
+- bench_cdc_diabetes_health_indicators
+- synthetic_regression_known_dgp
+- tml_foot_traffic_wuerzburg_retail_forecasting_2_0
+regimes:
+- fixed_stage_iterative
+- flexible_iterative
+- n_restarts_call_matched_upper_bound
+- single_shot
+split_seeds:
+- 42
+- 67
+- 12345
+temperature_schedule:
+- 0.7
+repeats_per_condition: 2
+llm_seed_base: 1000
+max_actions: 8
+max_tokens: 24000
+total_token_budget: 200000
+n_restarts: 4
+num_workers: 8
+request_timeout_sec: 300
+max_retries: 5
+interleave_by_model: true
+max_concurrent_per_model: 0
+auto_finalize_on_exhaustion: true
+paraphrase_prompts: true
+performance_normalization: true
+openrouter_base_url: https://openrouter.ai/api/v1/chat/completions
+api_key_env: OPENROUTER_API_KEY
+provider_preferences:
+  deepseek/deepseek-v4-flash:
+    only:
+    - deepseek
+    allow_fallbacks: false
+  deepseek/deepseek-v4-pro:
+    only:
+    - deepseek
+    allow_fallbacks: false
+task_dirs:
+- automl_eval/tasks
+output_dir: rebuttal/artifacts/behavioral
+run_name: equal
+dataset_subsample_factor: 10
+stateless_sandbox_timeout_sec: 600
+stateful_sandbox_timeout_sec: 800
+stateless_task_time_budget_sec: 1200
+stateful_task_time_budget_sec: 2400
+stateful_stage_time_budget_multiplier: 6.0
+dataset_download_timeout_sec: 14400
+episode_timeout_sec: 2800
+debug_trace_enabled: true
+log_executable_code: true
+log_raw_llm_responses: true
+reward_performance_weight: 0.3333333333333333
+reward_plan_weight: 0.3333333333333333
+reward_code_weight: 0.3333333333333333
