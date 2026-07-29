@@ -1,0 +1,5 @@
+| regime | hidden_obs_q | hidden_e2e_q | protocol_valid |
+| --- | --- | --- | --- |
+| Flexible iterative | 0.779 | 0.754 | 0.969 |
+| Unstructured agent | 0.762 | 0.527 | 0.692 |
+| Call-matched restarts | 0.716 | 0.686 | 0.958 |
